@@ -1,27 +1,28 @@
 // the setup function runs once when you press reset or power the board
-#include <FastLED.h> //https://github.com/FastLED/FastLED
-#include "Wordclock_Maske.h"
+#include <FastLED.h>              //https://github.com/FastLED/FastLED
+#include "Wordclock_Maske.h"      //2nd library
 //FASTLED_USING_NAMESPACE
-#define DATA_PIN    6
-#define LED_TYPE    WS2812B
-#define COLOR_ORDER GRB
-#define NUM_LEDS    160      // Gesamtanzahl der WS2812 LEDs
+#define DATA_PIN    6             //used PIN
+#define LED_TYPE    WS2812B       //used LED-stripes (type)
+#define COLOR_ORDER GRB           //color adjustment
+#define NUM_LEDS    160           //number of WS2812 LED
 CRGB leds[NUM_LEDS];
 //Buttons
-const int buttonPinStd = 2;     // the number of the pushbutton pin
-int PinStd;
-const int buttonPinMin = 4;     // the number of the pushbutton pin
-int PinMin;
+const int buttonPinStd = 2;       //the number of the pushbutton pin (first)
+int PinStd;                       //Pin used for the hour adjustment
+const int buttonPinMin = 4;       //the number of the pushbutton pin (second)
+int PinMin;                       //Pin used for the minute adjustment
 // variables will change:
-int buttonStateStd = 0;         // variable for reading the pushbutton status
-int buttonStateMin = 0;         // variable for reading the pushbutton status
+int buttonStateStd = 0;           // variable for reading the pushbutton status (first)
+int buttonStateMin = 0;           // variable for reading the pushbutton status (second)
 //Indizes
-int i, n;
+int i, n;                         //indices
 //Tasterelegung
-int taster = 2;
-int tasterstatus = 0;
+int taster = 2;                   //taster on Pin 2
+int tasterstatus = 0;             //state of taster
 int TasterStatus;
-// push word to leds array
+
+// push word to leds array (all credits to https://github.com/dgoersch/wordclock )
 void word2stripe(const int word[], int len, CRGB color) {
   for (int letter = 0; letter < len; letter++) {
     leds[word[letter]] = color;
@@ -31,13 +32,13 @@ void word2stripe(const int word[], int len, CRGB color) {
 void setup() {
 
   FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalPixelString);
-  FastLED.setBrightness(5);
-  delay(3000); // Sicherheits Delay
+  FastLED.setBrightness(5);       //for testing and healthy eyes
+  delay(3000);                    
   Serial.begin(9600);
   //LEDs werden eingefügt + Farbkorrektur und Farbtemperatur auf Wolfram (warmweiß)
-  word2stripe(wordES, sizeof(wordES) / sizeof(int), CRGB::DarkSlateBlue);
-  word2stripe(wordIST, sizeof(wordIST) / sizeof(int), CRGB::DarkSlateBlue);
-  word2stripe(wordhUhr, sizeof(wordhUhr) / sizeof(int), CRGB::Tomato);
+  word2stripe(wordES, sizeof(wordES) / sizeof(int), CRGB::DarkSlateBlue);     //constant showing words
+  word2stripe(wordIST, sizeof(wordIST) / sizeof(int), CRGB::DarkSlateBlue);   //constant showing words
+  word2stripe(wordhUhr, sizeof(wordhUhr) / sizeof(int), CRGB::Tomato);        //constant showing words
   delay(1000);
   FastLED.show();
 
@@ -49,11 +50,11 @@ void loop() {
 
   delay(500);
 
-  //Stunden
+  //Stunden - hours: loop counting of the index and show the specific LED
   for (i = 0; i < 12; i++) {
     tasterstatus = digitalRead(taster);
     if (tasterstatus == HIGH)
-    {
+    { //construction area -> if the button is pushed the index should increase immediatly -> BUT! the second loop needs to be finished first (ERROR)
       digitalWrite(TasterStatus, HIGH);
       i = i + 1;
       delay (100);
@@ -113,7 +114,9 @@ void loop() {
     word2stripe(wordhElf, sizeof(wordhElf) / sizeof(int), CRGB( 0, 0, 0)); FastLED.show();
     word2stripe(wordhZwoelf, sizeof(wordhZwoelf) / sizeof(int), CRGB( 8, 75, 10)); FastLED.show();
   }
-  //Minuten
+  /*Minuten - minutes: loop counting of the index and show the specific LED
+    the delays in the second loop was decreased for testing
+  */
   for (n = 0; n < 60; n++) {
     Serial.println("Minute");
     Serial.println(n);
@@ -500,8 +503,8 @@ void loop() {
       word2stripe(wordmFuenfzig, sizeof(wordmFuenfzig) / sizeof(int), CRGB::DarkOrchid); FastLED.show();
       delay(1000);//warte 60 Sekunden um nächste Minute anzuzeigen
     }
-  }//Minute_klein-out
-} //Stunde-out
-// show it on the matix
+  }   //Minute-minute-out
+}     //Stunde-hour-out
+      //show it on the matix
 FastLED.show();
-}//Loop-out
+}     //Loop-out
